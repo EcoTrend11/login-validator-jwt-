@@ -1,5 +1,4 @@
 const express=require("express")
-const dotenv= require("dotenv")
 const cookieParser=require("cookie-parser")
 const router = require("./routes/router")
 const app = express()
@@ -12,12 +11,15 @@ app.set('view engine', 'ejs')
 //seteamos carpeta public
 app.use(express.static('public'))
 
-//poder enviar datos
-dotenv.config({path: "./env/.env"})
-
 app.use(cookieParser())
 app.use('/', router)
 
+//clear cache
+app.use(function(req, res, next) {
+    if (!req.user)
+        res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    next();
+});
  
 app.listen(3001, ()=>{
     console.log("escuchando en el puerto 3001")

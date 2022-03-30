@@ -60,8 +60,6 @@ exports.login = async (req, res)=>{
                     const token = jwt.sign({id:id}, process.env.JWT_SECRETO, {
                         expiresIn: process.env.JWT_TIEMPO_EXPIRA
                     })
-                   console.log("TOKEN: "+token+" para el USUARIO : "+user)
-
                    const cookiesOptions = {
                         expires: new Date(Date.now()+process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000),
                         httpOnly: true
@@ -73,7 +71,7 @@ exports.login = async (req, res)=>{
                         alertMessage: "¡LOGIN CORRECTO!",
                         alertIcon:'success',
                         showConfirmButton: false,
-                        timer: 800,
+                        timer: 1000,
                         ruta: ''
                    })
                 }
@@ -82,4 +80,28 @@ exports.login = async (req, res)=>{
     } catch (error) {
         console.log(error)
     }
+}
+
+exports.isAuthenticated = async( req, res , next) =>{
+    if(req.cookies.jwt){
+        try{
+            const  decodificada = await promisify(jwt.verify)(req.cookies.jwt, JWT_SECRETO)
+            database.query("SELECT * FROM user WHERE id = ?", [decodificada.id],(error, results) =>{
+                if(!results){return next()}
+                req.user = results[0]
+                return next()
+            })
+        }
+        catch(error){
+            console.log(error)
+            return next()
+        }
+    }else{
+        res.redirect('/login')
+    }
+}
+
+exports.logout = (req, res)=>{
+    res.clearCookie("jwt")
+    return( res.redirect("/"))
 }
