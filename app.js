@@ -13,13 +13,10 @@ app.set('view engine', 'ejs')
 app.use(express.static('public'))
 
 //poder enviar datos
-
 dotenv.config({path: "./env/.env"})
+
+app.use(cookieParser())
 app.use('/', router)
-
-
-// app.use(cookieParser)
-
 
  
 app.listen(3001, ()=>{
