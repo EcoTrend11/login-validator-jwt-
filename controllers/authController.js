@@ -4,22 +4,34 @@ const {promisify} = require("util")//para trabajar con promesas
 const jwt = require("jsonwebtoken")
 require('dotenv').config();
 const {
-    JWT_SECRETO,JWT_TIEMPO_EXPIRA,JWT_COOKIE_EXPIRES
+    JWT_SECRETO, JWT_TIEMPO_EXPIRA, JWT_COOKIE_EXPIRES
   } = process.env;
 
 exports.register = async (req, res )=>{
     try{
         const {name, user , pass} = req.body 
-        let passHash = await bcryptjs.hash(pass, 8)
-
-        database.query("INSERT INTO user SET ?", { 
-            name : name, 
-            user : user,
-            pass : passHash
-        }, (error, result) =>{
-            if(error){console.log(error)}
-            res.redirect('/')
-        })
+        if(!name || !user || !pass){
+            res.render('register',{
+                alert:true,
+                alertTitle: "Advertencia",
+                alertMessage: "Ingrese todos los campos",
+                alertIcon:'error',
+                showConfirmButton: true,
+                timer: false,
+                ruta: 'register'
+            })
+        }
+        else{
+            let passHash = await bcryptjs.hash(pass, 8)
+            database.query("INSERT INTO user SET ?", { 
+                name : name, 
+                user : user,
+                pass : passHash
+            }, (error, result) =>{
+                if(error){console.log(error)}
+                res.redirect('/')
+            })            
+        }
     }
     catch(error){
         console.log(error)
@@ -28,8 +40,7 @@ exports.register = async (req, res )=>{
 
 exports.login = async (req, res)=>{
     try {
-        const user = req.body.user
-        const pass = req.body.pass        
+        const {user , pass} = req.body
 
         if(!user || !pass ){
             res.render('login',{
